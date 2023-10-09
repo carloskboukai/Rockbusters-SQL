@@ -1,0 +1,23 @@
+-- CTE syntax (Find out how many of the top 5 customers are based within each country):
+WITH topfive_customers (totalamount, customer_id, first_name, last_name, country) AS 
+(SELECT SUM (A.amount) AS totalamount, A.customer_id, B.first_name, B.last_name, E.country
+	FROM payment A
+	LEFT JOIN customer B ON A.customer_id=B.customer_id
+	LEFT JOIN address C ON B.address_id=C.address_id
+	LEFT JOIN city D ON C.city_id=D.city_id
+	LEFT JOIN country E ON D.country_id=E.country_id
+	WHERE D.city IN ('Aurora', 'London', 'Kitwe', 'Adoni', 'Dhule', 'Xintal',
+	'Sivas',  'Mahajanga', 'Nezahualcyotl', 'Escobar')
+	GROUP BY A.amount, A.customer_id, B.first_name, B.last_name, E.country
+	ORDER BY totalamount DESC
+	LIMIT 5)
+SELECT E.country, COUNT (DISTINCT A.customer_id) AS all_customer_count, COUNT (DISTINCT topfive_customers) AS topfive_customers
+FROM payment A
+INNER JOIN customer B ON A.customer_id=B.customer_id
+INNER JOIN address C ON B.address_id=C.address_id
+INNER JOIN city D ON C.city_id=D.city_id
+INNER JOIN country E ON D.country_id=E.country_id
+LEFT JOIN topfive_customers ON A.customer_id=topfive_customers.customer_id
+GROUP BY E.country
+HAVING COUNT (topfive_customers) >0
+ORDER BY (topfive_customers), COUNT (A.customer_id)  DESC
