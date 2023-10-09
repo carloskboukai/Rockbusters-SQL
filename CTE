@@ -1,0 +1,15 @@
+--CTE syntax:
+WITH top_five (totalamount, customer_id, first_name, last_name, country) AS
+(SELECT SUM (A.amount) AS totalamount, A.customer_id, B.first_name, B.last_name, E.country
+	FROM payment A
+	LEFT JOIN customer B ON A.customer_id=B.customer_id
+	LEFT JOIN address C ON B.address_id=C.address_id
+	LEFT JOIN city D ON C.city_id=D.city_id
+	LEFT JOIN country E ON D.country_id=E.country_id
+	WHERE D.city IN ('Aurora', 'London', 'Kitwe', 'Adoni', 'Dhule', 'Xintal',
+	'Sivas',  'Mahajanga', 'Nezahualcyotl', 'Escobar')
+	GROUP BY A.amount, A.customer_id, B.first_name, B.last_name, E.country
+	ORDER BY totalamount DESC
+	LIMIT 5)
+SELECT AVG (totalamount)
+FROM top_five
